@@ -441,7 +441,9 @@ class redWechat
 		$msg->touser = $openid;
 		$msg->msgtype = "text";
 		$msg->text = $content;
-		$json = json_encode($msg);
+		//$json = json_encode($msg);发送中文json_encode后成uncoide 改为数组形式
+		$arr=array('msgtype'=>'text','touser'=>$openid,'text'=>array('content'=>$content_text));
+		$json = $this->JSON($arr);
 		$json = $this->post_json($url,$json);
 		return $json;
 	}
@@ -587,6 +589,36 @@ class redWechat
 		$qr_url = sprintf("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=%s",$ticket);
 		return $qr_url;
 	}
+	//处理中文的json_encode
+	function arrayRecursive(&$array, $function, $apply_to_keys_also = false){
+	        static $recursive_counter = 0;
+	        if (++$recursive_counter > 1000) {
+	            die('possible deep recursion attack');
+	        }
+	        foreach ($array as $key => $value) {
+	            if (is_array($value)) {
+	                $this->arrayRecursive($array[$key], $function, $apply_to_keys_also);
+	            } else {
+	                $array[$key] = $function($value);
+	            }
+	      
+	            if ($apply_to_keys_also && is_string($key)) {
+	                $new_key = $function($key);
+	                if ($new_key != $key) {
+	                    $array[$new_key] = $array[$key];
+	                    unset($array[$key]);
+	                }
+	            }
+	        }
+	        $recursive_counter--;
+    }
+
+    function JSON($array) {
+        $this->arrayRecursive($array, 'urlencode', true);
+        $json = json_encode($array);
+        return urldecode($json);
+    }
+
 
 }
 ?>
