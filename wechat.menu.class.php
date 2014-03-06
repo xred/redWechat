@@ -50,8 +50,4 @@ class wechatMenu
 		echo $delete_Obj['errmsg'];
 	}
 }
-$wechat = new wechatMenu();
-$wechat->init($appid,$secret);
-$menu = "";
-$wechat->set_menu($menu);
 ?>
